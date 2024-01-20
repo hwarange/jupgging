@@ -1,13 +1,13 @@
-package com.gdsc.cleanstep;
+package com.gdsc.jupgging;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CleanStepApplication {
+public class JupggingApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CleanStepApplication.class, args);
+		SpringApplication.run(JupggingApplication.class, args);
 	}
 
 }

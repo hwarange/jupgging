@@ -8,15 +8,17 @@ class CustomTextFormField extends StatelessWidget {
   final bool autofocus;
   final ValueChanged<String> ? onChanged;
   final TextInputType ? keyboardType;
+  final TextEditingController ? controller;
 
 
   const CustomTextFormField({
-    required this.onChanged,
+    this.onChanged,
     this.obscureText = false,
     this.autofocus = false,
     this.hintText,
     this.errorText,
     this.keyboardType,
+    this.controller,
     Key ? key
   }) : super (key: key);
 
@@ -30,6 +32,7 @@ class CustomTextFormField extends StatelessWidget {
     );
 
     return TextFormField(
+      controller: controller,
       keyboardType: keyboardType,
       cursorColor: BG_COLOR,
       // 비밀번호 입력할때(안보이기 기능)

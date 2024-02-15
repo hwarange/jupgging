@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gdsc/commmon/component/layout/default_layout.dart';
 import 'package:gdsc/commmon/const/colors.dart';
 import 'package:gdsc/profile/profile_list.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
+
+import '../controller/auth_controller.dart';
 
 
 class ProfileView extends StatefulWidget {
@@ -19,6 +22,8 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
     return DefaultLayout(
       backgroundColor: BG_COLOR,
         child: Center(
@@ -82,12 +87,12 @@ class _ProfileViewState extends State<ProfileView> {
               ProfileList(
                 child: createRows2(
                     "이름: ",
-                    "홍길동")
+                    "${user?.displayName}")
               ),
               ProfileList(
                 child: createRows2(
                   "이메일: ",
-                  "gdsc1234@gmail.com"
+                  "${user?.email}"
                 )
               ),
               ProfileList(
@@ -104,6 +109,14 @@ class _ProfileViewState extends State<ProfileView> {
                   "point"
                 )
               ),
+              SizedBox(height: 25,),
+              IconButton(
+                onPressed: (){
+                  AuthController.instance.logout();
+                },
+                icon: Icon(Icons.login_outlined),
+              ),
+
 
 
 

@@ -6,7 +6,7 @@ import 'package:gdsc/commmon/const/colors.dart';
 import 'package:gdsc/profile/profile_list.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../controller/auth_controller.dart';
 
 
@@ -19,6 +19,8 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   XFile? _pickedFile;
+
+  CollectionReference user = FirebaseFirestore.instance.collection('users');
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +40,31 @@ class _ProfileViewState extends State<ProfileView> {
                 customBorder:RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100),
                 ),
-                child: Ink(
+                child: user?.photoURL != null // 유저 포토가 있는경우
+                ? Ink(
                   width: 200,
                   height: 200,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(100),
                     image: DecorationImage(
                       fit: BoxFit.fill,
-                      image: AssetImage(
-                          "asset/people/profile.png"
+                      image: NetworkImage(
+                          '${user?.photoURL}'
                       )
                     )
+                  ),
+                )
+                    : Ink(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: AssetImage(
+                              'asset/people/profile.png'
+                          )
+                      )
                   ),
                 )
               )

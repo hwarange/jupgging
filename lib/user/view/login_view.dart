@@ -48,7 +48,7 @@ class LoginView extends StatelessWidget {
                 const SizedBox(height: 16.0,),
                 GestureDetector(
                   onTap: (){
-                    AuthController.instance.register(
+                    AuthController.instance.login(
                         emailController.text.trim(), passwordController.text.trim());
 
                   },

@@ -3,8 +3,12 @@ import 'package:gdsc/commmon/component/custom_text_form_field.dart';
 import 'package:gdsc/commmon/component/layout/default_layout.dart';
 import 'package:gdsc/commmon/const/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gdsc/user/view/google_sign_up.dart';
+import 'package:gdsc/user/view/sign_up.dart';
+import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../controller/auth_controller.dart';
+import '../../home/view/home_screen.dart';
 
 class LoginView extends StatelessWidget {
    LoginView({Key ? key}) : super(key: key);
@@ -76,8 +80,11 @@ class LoginView extends StatelessWidget {
                 const SizedBox(height: 16.0,),
                 GestureDetector(
                   onTap: (){
-                    AuthController.instance.register(
-                        emailController.text.trim(), passwordController.text.trim());
+                    Navigator.push(
+                        context, MaterialPageRoute(
+                        builder: (context) => Sign_Up()
+                    )
+                    );
                   },
                   child: Container(
                     child: Padding(
@@ -102,8 +109,20 @@ class LoginView extends StatelessWidget {
                 ),
 
                 GestureDetector(
-                  onTap: (){
-                    signInWithGoogle();
+                  onTap: ()async {
+                    // 구글 로그인 시도
+                    final UserCredential userCredential = await signInWithGoogle();
+                    // 구글 로그인 사용자의 이메일 가져오기
+                    final String? userEmail = userCredential.user?.email;
+                    // 이메일이 등록된 이메일인지 확인
+                    final bool isEmailRegistered = await isEmailRegisteredInFirestore(userEmail!);
+                    if (isEmailRegistered) {
+                      // 이미 등록된 이메일인 경우, 홈 화면으로 이동
+                      Get.offAll(() => HomeScreen());
+                    } else {
+                      // 등록되지 않은 이메일인 경우, 회원가입 화면으로 이동
+                      Get.offAll(() => GoogleSignUp());
+                    }
                   },
                   child: Container(
                     child: Padding(
@@ -154,22 +173,7 @@ class _Title extends StatelessWidget {
 
 
 
-Future<UserCredential> signInWithGoogle() async {
-  // Trigger the authentication flow
-  final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-  // Obtain the auth details from the request
-  final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-
-  // Create a new credential
-  final credential = GoogleAuthProvider.credential(
-    accessToken: googleAuth?.accessToken,
-    idToken: googleAuth?.idToken,
-  );
-
-  // Once signed in, return the UserCredential
-  return await FirebaseAuth.instance.signInWithCredential(credential);
-}
 
 // 서브 필요한 경우
 //class _SubTitle extends StatelessWidget {

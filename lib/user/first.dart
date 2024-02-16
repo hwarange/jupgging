@@ -4,6 +4,8 @@ import 'package:gdsc/commmon/const/colors.dart';
 import 'package:gdsc/user/trophy_card.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../controller/auth_controller.dart';
+
 class MyTrophy extends StatelessWidget {
   const MyTrophy({Key ? key}) : super(key: key);
 
@@ -372,7 +374,13 @@ class MyTrophy extends StatelessWidget {
                             ],
                           )
 
-                      )
+                      ),
+                      IconButton(
+                        onPressed: (){
+                          AuthController.instance.logout();
+                        },
+                        icon: Icon(Icons.login_outlined),
+                      ),
                     ],
                   ),
 

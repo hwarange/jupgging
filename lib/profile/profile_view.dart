@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gdsc/commmon/component/layout/default_layout.dart';
 import 'package:gdsc/commmon/const/colors.dart';
 import 'package:gdsc/profile/profile_list.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,126 +21,148 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   XFile? _pickedFile;
 
-  CollectionReference user = FirebaseFirestore.instance.collection('users');
+
 
   @override
   Widget build(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
 
     return DefaultLayout(
       backgroundColor: BG_COLOR,
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 60,),
-              if (_pickedFile == null)
-               InkWell(
-                onTap: (){
-                  _showBottomSheet();
-                },
-                customBorder:RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: user?.photoURL != null // 유저 포토가 있는경우
-                ? Ink(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    image: DecorationImage(
-                      fit: BoxFit.fill,
-                      image: NetworkImage(
-                          '${user?.photoURL}'
-                      )
+        child: StreamBuilder<DocumentSnapshot>(
+          stream: users.doc(user?.uid).snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData){
+              return CircularProgressIndicator();
+            }
+            var userData = snapshot.data!.data();
+            String userName = (userData as Map<String, dynamic>)['name'] ?? '이름값 없음';
+            String userNickName = (userData as Map<String, dynamic>)['nickname'] ?? '이름값 없음';
+            int userAge = (userData as Map<String, dynamic>)['age'] ?? '이름값 없음';
+            return Center(
+              child: Column(
+                children: [
+                  SizedBox(height: 60,),
+                  if (_pickedFile == null)
+                    InkWell(
+                        onTap: (){
+                          _showBottomSheet();
+                        },
+                        customBorder:RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: user?.photoURL != null // 유저 포토가 있는경우
+                            ? Ink(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              image: DecorationImage(
+                                  fit: BoxFit.fill,
+                                  image: NetworkImage(
+                                      '${user?.photoURL}'
+                                  )
+                              )
+                          ),
+                        )
+                            : Ink(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              image: DecorationImage(
+                                  fit: BoxFit.fill,
+                                  image: AssetImage(
+                                      'asset/people/profile.png'
+                                  )
+                              )
+                          ),
+                        )
                     )
-                  ),
-                )
-                    : Ink(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      image: DecorationImage(
-                          fit: BoxFit.fill,
-                          image: AssetImage(
-                              'asset/people/profile.png'
-                          )
-                      )
-                  ),
-                )
-              )
-              else
-                InkWell(
-                    onTap: (){
-                    },
-                    customBorder:RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            width: 2, color: Theme.of(context).colorScheme.primary),
-                        image: DecorationImage(
-                            image: FileImage(File(_pickedFile!.path)),
-                            fit: BoxFit.cover),
+                  else
+                    InkWell(
+                      onTap: (){
+                      },
+                      customBorder:RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              width: 2, color: Theme.of(context).colorScheme.primary),
+                          image: DecorationImage(
+                              image: FileImage(File(_pickedFile!.path)),
+                              fit: BoxFit.cover),
+                        ),
                       ),
                     ),
-                ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("줍깅1234",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 40,
-                    color: Colors.black,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text("${userNickName}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 25,),
+                  SizedBox(height: 25,),
+                  ProfileList(
+                      child: createRows2(
+                          "이름: ",
+                          "${userName}"
+                      )
+                  ),
+                  ProfileList(
+                      child: createRows2(
+                          "나이: ",
+                          "${userAge}"
+                      )
+                  ),
 
-              ProfileList(
-                child: createRows2(
-                    "이름: ",
-                    "${user?.displayName}")
-              ),
-              ProfileList(
-                child: createRows2(
-                  "이메일: ",
-                  "${user?.email}"
-                )
-              ),
-              ProfileList(
-                child: createRows3(
-                  "총 뛴 거리:",
-                  150,
-                  "Km"
-                )
-              ),
-              ProfileList(
-                child: createRows3(
-                  '지금까지 모은 포인트: ',
-                  50,
-                  "point"
-                )
-              ),
-              SizedBox(height: 25,),
-              IconButton(
-                onPressed: (){
-                  AuthController.instance.logout();
-                },
-                icon: Icon(Icons.login_outlined),
-              ),
+                  ProfileList(
+                      child: createRows2(
+                          "이메일: ",
+                          "${user?.email}"
+                      )
+                  ),
+                  ProfileList(
+                      child: createRows3(
+                          "총 뛴 거리:",
+                          150,
+                          "Km"
+                      )
+                  ),
+                  ProfileList(
+                      child: createRows3(
+                          '지금까지 모은 포인트: ',
+                          50,
+                          "point"
+                      )
+                  ),
+                  SizedBox(height: 25,),
+                  IconButton(
+                    onPressed: (){
+                      AuthController.instance.logout();
+                    },
+                    icon: Icon(Icons.login_outlined),
+                  ),
 
 
 
 
-            ],
+                ],
 
-          ),
-        ));
+              ),
+            );
+          }
+
+    )
+    );
   }
 
   _showBottomSheet() {

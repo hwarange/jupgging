@@ -8,12 +8,18 @@ enum IconState {
 }
 
 class RunningBox1 extends StatefulWidget {
+  final String detinationName;
+
+  const RunningBox1({
+    Key ?key,
+    required this.detinationName
+  }) : super (key: key);
   @override
   _RunningBoxState createState() => _RunningBoxState();
 }
 
 class _RunningBoxState extends State<RunningBox1> {
-  late Timer _timer;
+  Timer ? _timer;
   double _remainingDistance = 10.0; // 초기 거리 설정
   IconState _iconState = IconState.start;
   bool _isRunning = false;
@@ -26,7 +32,7 @@ class _RunningBoxState extends State<RunningBox1> {
             _remainingDistance -= 0.1; // 0.1씩 감소
           });
         } else {
-          _timer.cancel();
+          _timer!.cancel();
         }
       });
       setState(() {
@@ -37,7 +43,7 @@ class _RunningBoxState extends State<RunningBox1> {
 
   void _pauseRunning() {
     if (_isRunning) {
-      _timer.cancel();
+      _timer!.cancel();
       setState(() {
         _isRunning = false;
       });
@@ -46,7 +52,7 @@ class _RunningBoxState extends State<RunningBox1> {
 
   @override
   void dispose() {
-    _timer.cancel(); // 타이머 취소
+    _timer?.cancel(); // 타이머 취소
     super.dispose(); // 부모 클래스의 dispose 메서드 호출
   }
 
@@ -62,13 +68,12 @@ class _RunningBoxState extends State<RunningBox1> {
       child: Column(
         children: [
           StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('destinations').doc('trail_1').snapshots(), // 파이어스토어에서 데이터 가져오기
+            stream: FirebaseFirestore.instance.collection('destinations').snapshots(), // 파이어스토어에서 데이터 가져오기
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return CircularProgressIndicator(); // 데이터가 없을 경우 로딩 표시
               }
-
-              var destinationData = snapshot.data; // 데이터 가져오기
+              // 데이터 가져오기
 
               // 여기서 destinationData를 이용하여 목적지 정보를 가져와 사용할 수 있습니다.
               // 예를 들어, destinationData['latitude']와 destinationData['longitude']를 사용하여 목적지 좌표를 가져올 수 있습니다.
@@ -77,7 +82,7 @@ class _RunningBoxState extends State<RunningBox1> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // 목적지 정보를 표시하는 부분 (예시로만 작성)
-                  Text("Destination: ${destinationData!['name']}"), // 목적지 이름 표시
+                  Text("Destination: ${widget.detinationName}"), // 목적지 이름 표시
                   ElevatedButton(
                     onPressed: () {
                       if (_iconState == IconState.start) {

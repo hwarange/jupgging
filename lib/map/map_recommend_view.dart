@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:gdsc/commmon/component/layout/default_layout.dart';
 import 'package:gdsc/commmon/const/colors.dart';
 import 'package:gdsc/home/component/home_card.dart';
 import 'package:gdsc/map/map_view.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 class MapRecommendView extends StatefulWidget {
@@ -18,7 +21,7 @@ class MapRecommendView extends StatefulWidget {
 
 class _MapRecommendViewState extends State<MapRecommendView> {
 
-  final FirebaseFirestore destinations = FirebaseFirestore.instance;
+  CollectionReference destinations = FirebaseFirestore.instance.collection('destinations');
 
   @override
   Widget build(BuildContext context) {
@@ -39,32 +42,62 @@ class _MapRecommendViewState extends State<MapRecommendView> {
               ),
             ),
             SizedBox(height: 20,),
-            Center(
-              child: Column(
-                children: [
-                  Home_Card(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => MapView(),
-                      )
-                      );
-                    },
-                    height: 120,
-                  ),
-                  SizedBox(height: 20),
-                  Home_Card(
-                    height: 120,
-                  ),
-                  SizedBox(height: 20),
-                  Home_Card(
-                    height: 120,
-                  ),
-                  SizedBox(height: 20),
-                  Home_Card(
-                    height: 120,
-                  ),
-                ],
-              ),
-            ),
+            StreamBuilder(
+                stream: destinations.snapshots(),
+                builder: (BuildContext context,
+                AsyncSnapshot<QuerySnapshot> streamSnapshot){
+                  if(streamSnapshot.hasData){
+                    return Expanded(
+                      child: ListView.builder(
+                        padding: EdgeInsets.all(20),
+                        itemCount: streamSnapshot.data!.docs.length,
+                          itemBuilder:(context, index){
+                          final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
+                          final GeoPoint geoPoint = documentSnapshot['latlng']; // GeoPoint 가져오기
+                          final LatLng coordinates = LatLng(geoPoint.latitude, geoPoint.longitude);
+                          return Card(
+                            margin: EdgeInsets.all(20),
+                            child: Home_Card(
+                              onTap: () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                    MapView(coordinates: coordinates,
+                                    name: documentSnapshot['name'],))
+                                );
+                              },
+                              height: 90,
+                              Decoimage: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: AssetImage(
+                                      "asset/map/mapex.png"
+                                  )),
+                              child: ClipRect(
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                                  child: Container(
+                                    child: Center(
+                                      child: Text( documentSnapshot['name'],
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+
+                          },
+
+                      ),
+                    );
+                  }
+                  return Center(child: CircularProgressIndicator());
+            }
+            )
           ],
         ),
     );

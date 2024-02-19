@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:gdsc/commmon/component/layout/default_layout.dart';
 import 'package:gdsc/commmon/const/colors.dart';
@@ -6,44 +7,52 @@ import 'package:gdsc/map/running_box.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapView extends StatefulWidget {
-  const MapView({Key ? key}) : super (key: key);
+  final LatLng coordinates;
+  final String name;
+
+  const MapView({
+
+    Key ? key,
+    required this.coordinates,
+    required this.name,
+
+  }) : super (key: key);
 
   @override
   State<MapView> createState() => _MapViewState();
 }
+CollectionReference destinations = FirebaseFirestore.instance.collection('destinations');
+
 
 class _MapViewState extends State<MapView> {
-
+  final Set<Polyline> _polylines = {};
   late GoogleMapController mapController;
-
   final LatLng _center = const LatLng(37.2250646, 126.9751430);
+
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
-  Set<Polyline> _polylines = {};
+
 
 
   // 폴리라인 그리기
   void _createPolylines() {
-    // 폴리라인 정보 설정
+    // 좌표가 있는지 확인
+    // 폴리라인 그리기
     Polyline polyline = Polyline(
-      polylineId: PolylineId("home_to_station"),
+      polylineId: PolylineId("map_polyline"),
       color: Colors.blue,
       width: 3,
-      points: [
-        LatLng(37.2250646, 126.9751430), // 우리집 좌표
-        LatLng(37.267764, 127.000574), // 수원역 좌표
-      ],
+      points: [_center, widget.coordinates]
     );
-
-
-    // 폴리라인 추가
     setState(() {
       _polylines.add(polyline);
     });
-  }
+    }
+
+    // 폴리라인 추가
 
 
   @override
@@ -74,7 +83,7 @@ class _MapViewState extends State<MapView> {
               Positioned(
                 bottom: 30,
                   left: 30,
-                  child: RunningBox1()),
+                  child: RunningBox1(detinationName: widget.name)),
 
             ]
         )

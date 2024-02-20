@@ -21,7 +21,7 @@ class MapRecommendView extends StatefulWidget {
 
 class _MapRecommendViewState extends State<MapRecommendView> {
 
-  CollectionReference destinations = FirebaseFirestore.instance.collection('destinations');
+  CollectionReference destinations = FirebaseFirestore.instance.collection('trail');
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +53,7 @@ class _MapRecommendViewState extends State<MapRecommendView> {
                         itemCount: streamSnapshot.data!.docs.length,
                           itemBuilder:(context, index){
                           final DocumentSnapshot documentSnapshot = streamSnapshot.data!.docs[index];
-                          final GeoPoint geoPoint = documentSnapshot['latlng']; // GeoPoint 가져오기
-                          final LatLng coordinates = LatLng(geoPoint.latitude, geoPoint.longitude);
+
                           return Card(
                             margin: EdgeInsets.all(20),
                             child: Home_Card(
@@ -62,8 +61,7 @@ class _MapRecommendViewState extends State<MapRecommendView> {
                                 Navigator.push(context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                    MapView(coordinates: coordinates,
-                                    name: documentSnapshot['name'],))
+                                    MapView(trailName:documentSnapshot['trail_name']))
                                 );
                               },
                               height: 90,
@@ -77,7 +75,7 @@ class _MapRecommendViewState extends State<MapRecommendView> {
                                   filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
                                   child: Container(
                                     child: Center(
-                                      child: Text( documentSnapshot['name'],
+                                      child: Text( documentSnapshot['trail_name'],
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,

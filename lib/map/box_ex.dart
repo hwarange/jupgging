@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Cloud Firestore 패키지 import
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gdsc/commmon/const/colors.dart'; // Cloud Firestore 패키지 import
 
 enum IconState {
   start,
@@ -23,6 +25,8 @@ class _RunningBoxState extends State<RunningBox1> {
   double _remainingDistance = 10.0; // 초기 거리 설정
   IconState _iconState = IconState.start;
   bool _isRunning = false;
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  User? user = FirebaseAuth.instance.currentUser;
 
   void _startRunning() {
     if (!_isRunning) {
@@ -62,7 +66,7 @@ class _RunningBoxState extends State<RunningBox1> {
       height: 90,
       width: 300,
       decoration: BoxDecoration(
-        color: Colors.blueGrey, // 예시로 색상 지정
+        color: BG_COLOR, // 예시로 색상 지정
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -82,7 +86,46 @@ class _RunningBoxState extends State<RunningBox1> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // 목적지 정보를 표시하는 부분 (예시로만 작성)
-                  Text("Destination: ${widget.detinationName}"), // 목적지 이름 표시
+                  FutureBuilder(
+                    future: users.doc(user!.uid).get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+                      var userData = snapshot.data;
+                      var userNickname = userData!['nickname'] ?? 'User'; // 유저의 닉네임 가져오기
+                      return Container(
+                        padding: EdgeInsets.all(10),
+                        child: Text(
+                          userNickname,
+                          style: TextStyle(
+                              color: W_BOX_COLOR,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    },
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                        border: Border(
+                            left: BorderSide(color: W_BOX_COLOR, width: 3),
+                            right: BorderSide(color: W_BOX_COLOR ,width: 3)
+                        )
+                    ),
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      "${widget.detinationName}",
+                      style: TextStyle(
+                          color: W_BOX_COLOR,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ), // 목적지 이름 표시
                   ElevatedButton(
                     onPressed: () {
                       if (_iconState == IconState.start) {
